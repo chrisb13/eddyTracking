@@ -3,6 +3,8 @@
  
 Eric Oliver
 
+Code for the detection and tracking of eddies, following Chelton et al. (Prog. Ocean., 2011) given a series of sea level maps.
+
 Code Description
 ============                     
 
