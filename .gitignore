@@ -1,2 +1,5 @@
 *.pyc
 *.un~
+*.png
+*.npz
+*.p

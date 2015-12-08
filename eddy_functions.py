@@ -24,6 +24,7 @@ from netCDF4 import Dataset
 from itertools import repeat
 
 import params 
+import experiments as exps
 
 import re
 
@@ -205,7 +206,7 @@ def load_lonlat(run, disk='erebor'):
     elif run=='cb_AVISO':
 
         pathroot = './'
-        pathroot=params.pathroot
+        pathroot=exps.pathroot
 
         # Find week's map
         #note slight difference in file name!
@@ -228,12 +229,12 @@ def load_lonlat(run, disk='erebor'):
 
     elif run=='cb_NEMO':
 
-        pathroot=params.pathroot
+        pathroot=exps.pathroot
 
         # Find week's map
         #file_header = '*/cordex24-ERAI01_1d_*_grid_T_2D'
         #file_list = glob.glob(pathroot + file_header + '*.nc')
-        file_list=raw_nemo_globber_specifytpe(params.pathroot,return_dates=False)
+        file_list=raw_nemo_globber_specifytpe(exps.pathroot,return_dates=False)
 
         assert (len(file_list)>0),"globbing failed, exiting"
 
@@ -355,7 +356,7 @@ def load_eta(run, tt, i1, i2, j1, j2, disk='erebor'):
 
         pathroot = './'
         pathroot='/srv/ccrc/data42/z3457920/RawData/AVISO/RawData/dt_global_allsat_madt/ftp.aviso.altimetry.fr/global/delayed-time/grids/madt/all-sat-merged/h/1993/'
-        pathroot=params.pathroot
+        pathroot=exps.pathroot
 
         # Find week's map
         #note slight difference in file name!
@@ -404,9 +405,9 @@ def load_eta(run, tt, i1, i2, j1, j2, disk='erebor'):
 
 
         #pathroot='/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24_ERAI01/'
-        pathroot=params.pathroot
+        pathroot=exps.pathroot
 
-        file_list=raw_nemo_globber_specifytpe(params.pathroot,return_dates=True)
+        file_list=raw_nemo_globber_specifytpe(exps.pathroot,return_dates=True)
         infile=file_list.iloc[tt]['file_list']
         file_time_index=file_list.iloc[tt]['file_time_index']
 

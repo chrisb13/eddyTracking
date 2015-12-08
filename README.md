@@ -15,6 +15,8 @@ File                 |Description
 |eddy_census.py       | Code for calculating census statistics of tracked eddies|
 |eddy_plot.py         | Code for plotting eddy tracks|
 |eddy_functions.py    | Module of supporting functions|
+|eddytrackwrap.py     | eddy_detection.py and eddy_tracking.py can now be run from a single interface via the command line. This does not run the plotting scripts. This is so the eddy tracking can be run on many NEMO experiments. Be aware that if you additional steps, e.g. eddy_tracking_two.py then you'll need to look at the import experiments steps in eddy_detection and eddy_tracking.|
+| experiments.py      | Added by Chris, pertinent experiment information, separated from params as it may be modified by eddytrackwrap.py|
 
 ## Notes
 
@@ -38,7 +40,10 @@ Modified to work with NEMO. Made some general changes including:
  1. Refactored so that pathroot for input data can be defined in params rather than eddy_functions.
  1. Added quick_plot and detection_plot functions to eddy_function.py
  1. Added functions from ecoliver (that were not previously included) into eddy_functions.py
- 1. Added rossrad.dat
+ 1. Added rossrad.dat (and details on where it came from).
+ 1. Added eddytrackwrap.py so that eddy_detection.py and eddy_tracking.py can be run from a single interface via the command line (passing interface added). This does not run the plotting scripts. This is so the eddy tracking can be run on many NEMO experiments. Note the less than ideal way variables from experiments.py are modified.
+
+Despite the new eddytrackwrap workflow, the scripts should still be able to run as ECJ described (notes above).
 
 ## Contact                                                                                                          
 Eric C. J. Oliver                                                                                                                   
@@ -50,10 +55,12 @@ w: http://passage.phys.ocean.dal.ca/~olivere
 https://github.com/ecjoliver 
 
 
-Christopher Bull.                                                                                                                   Climate Change Research Centre and ARC Centre of Excellence for Climate System Science.
+Christopher Bull.                                                                                                                   
+Climate Change Research Centre and ARC Centre of Excellence for Climate System Science.
 University of New South Wales                                                                                                      
 Sydney, NSW, Australia, 2052     
 e: z3457920@student.unsw.edu.au                                                                                                    
 w: christopherbull.com.au
 github.com/chrisb13
+
 t: @ChrisBullOceanO

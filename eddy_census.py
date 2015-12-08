@@ -11,11 +11,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import mpl_toolkits.basemap as bm
 import params
+import experiments as exps
 
 
 # Load eddy data
 
-data_dir = params.data_dir
+data_dir = exps.data_dir
 
 run = 'AVISO'
 data = np.load(data_dir+'eddy_track_'+run+'.npz')

@@ -11,11 +11,12 @@ from matplotlib import pyplot as plt
 import mpl_toolkits.basemap as bm
 
 import params
+import experiments as exps
 
 # Load eddy data
 
 data_dir = './'
-data_dir = params.data_dir
+data_dir = exps.data_dir
 
 #run = 'cb_AVISO'
 #data = np.load(data_dir+'eddy_track_'+run+'.npz')
@@ -102,7 +103,7 @@ for age in age_min_weeks:
 #plt.show()
 #plt.savefig('../../../documents/10_Tasman_Sea_Eddies/figures/eddies_OFAM_orig.pdf', bbox_inches='tight', pad_inches=0.5)
 #plt.savefig('./eddies_OFAM_orig1.png', bbox_inches='tight', pad_inches=0.5)
-plt.savefig(params.plot_dir+'eddies_OFAM_orig1.png', bbox_inches='tight', pad_inches=0.5)
+plt.savefig(exps.plot_dir+'eddies_OFAM_orig1.png', bbox_inches='tight', pad_inches=0.5)
 
 domain = [134, 180, -50, -25]
 plt.figure()
@@ -150,7 +151,7 @@ for age in age_min_weeks:
 # plt.savefig('../../../documents/10_Tasman_Sea_Eddies/figures/eddies_OFAM_orig.pdf', bbox_inches='tight', pad_inches=0.5)
 # plt.savefig('../../../documents/10_Tasman_Sea_Eddies/figures/eddies_OFAM_orig.png', bbox_inches='tight', pad_inches=0.5)
 #plt.savefig('./eddies_OFAM_orig2.png', bbox_inches='tight', pad_inches=0.5)
-plt.savefig(params.plot_dir+'eddies_OFAM_orig2.png', bbox_inches='tight', pad_inches=0.5)
+plt.savefig(exps.plot_dir+'eddies_OFAM_orig2.png', bbox_inches='tight', pad_inches=0.5)
 
 
 # Plot eddy generation locations
@@ -191,4 +192,4 @@ plt.title('Eddy generation locations (A1B)')
     #if (eddies_A1B[ed]['age'] > age_min) & (eddies_A1B[ed]['type'] == 'cyclonic'):
             #plt.plot(lon[0], lat[0], 'bo')
             #plt.plot(lon[-1], lat[-1], 'bx')
-plt.savefig(params.plot_dir+'last.png')
+plt.savefig(exps.plot_dir+'last.png')
