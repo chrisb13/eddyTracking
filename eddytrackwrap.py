@@ -35,6 +35,14 @@ Notes:
 Example:
 python eddytrackwrap.py 'cb_NEMO' 0.25 1 '/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24_ERAI01/' ./ ./
 python eddytrackwrap.py 'cb_NEMO' 0.25 1 /home/chris/codescratch/mkmov/ ./ ./
+
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24_ERAI01/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24_ERAI01b/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24_ERAI01b/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24_ERAI01b/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24REALNONZ500_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24REALNONZ500_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24REALNONZ500_ERAI01/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24REALNONZ80_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24REALNONZ80_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24REALNONZ80_ERAI01/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24FBCTRL_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24FBCTRL_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24FBCTRL_ERAI01/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24FBNONZ4000_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24FBNONZ4000_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24FBNONZ4000_ERAI01/plots/ 
+python /home/z3457920/hdrive/repos/nemo_analysis/diagnostics/eddytracking/eddytrackwrap.py 'cb_NEMO' 0.25 1 /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24SLGEOV1_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24SLGEOV1_ERAI01/ /srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking/nemo_cordex24SLGEOV1_ERAI01/plots/ 
 """
 
 #see: https://github.com/docopt/docopt
@@ -55,6 +63,20 @@ from eddy_functions import raw_nemo_globber_specifytpe
 #is this needed?
 import pandas as pd
 
+import os
+
+def mkdir(p):
+    """make directory of path that is passed"""
+    import os
+    try:
+       os.makedirs(p)
+       print "output folder: "+p+ " does not exist, we will make one."
+    except OSError as exc: # Python >2.5
+       import errno
+       if exc.errno == errno.EEXIST and os.path.isdir(p):
+          pass
+       else: raise
+
 def find_T(path_to_experiment):
     """function to find the number of time steps for a NEMO experiment, as files contain different numbers of time steps.
 
@@ -66,11 +88,16 @@ def find_T(path_to_experiment):
     pass
 
 if __name__ == "__main__": 
+    print "Running Eddy Tracker in arg passing mode!"
     #read in/process  arguments
     arguments = docopt(__doc__)
 
     # print arguments
     workingfolder=arguments['DATA_DIR']
+
+    print "Creating/checking we have output dirs."
+    mkdir(arguments['DATA_DIR'])
+    mkdir(arguments['PLOT_DIR'])
 
     #change dtype from string
     arguments['DT']=float(arguments['DT'])
@@ -81,9 +108,10 @@ if __name__ == "__main__":
 
     #Save a dictionary into a pickle file.
     pickle.dump( arguments, open( workingfolder+'pickleargs.p', "wb" ) )
+    print "dumping arguments into pickle here: "+workingfolder+'pickleargs.p'
 
-    subprocess.call('python eddy_detection.py --cli '+\
-        workingfolder+'pickleargs.p',shell=True)
+    print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'
+    subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p',shell=True)
 
-    subprocess.call('python eddy_tracking.py --cli '+\
-        workingfolder+'pickleargs.p',shell=True)
+    print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p'
+    subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p',shell=True)

@@ -14,6 +14,8 @@ Usage:
 Options:
     -h,--help          : show this help message
     --cli PCKLE_PATH   : command line interface for eddytrackwrap.py, where PCKLE_PATH is a pickle containing the relevant details usually from experiments.py
+
+NB: Current way of reading NEMO files is very bad for IO. It is globbing (twice a timestep!) a lot and opening/closing the same file unecessarily. This could be improved a lot!
 '''
 
 # Load required modules
@@ -34,6 +36,8 @@ import pickle
 import params
 import experiments as exps
 
+getNEMOtime=False
+
 #for eddytrackwrap.py
 from docopt import docopt
 arguments = docopt(__doc__)
@@ -48,12 +52,16 @@ if arguments['--cli']:
     exps.res=cli_exp_dict['RES']
     exps.run=cli_exp_dict['RUN']
     exps.T=cli_exp_dict['T']
+    # exps.T=3 #TEMP TEP
 
     res_aviso = 0.25 # horizontal resolution of Aviso SSH fields [degrees]
 
     area_correction = res_aviso**2 / exps.res**2 # correction for different resoluttions of AVISO and OFAM
     exps.Npix_min = np.floor(8*area_correction) # min number of eddy pixels
     exps.Npix_max = np.floor(1000*area_correction) # max number of eddy pixels
+
+    getNEMOtime=True
+
 
 
 # Load latitude and longitude vectors and restrict to domain of interest
@@ -69,11 +77,13 @@ lat_eddies_a = []
 amp_eddies_a = []
 area_eddies_a = []
 scale_eddies_a = []
+time_eddies_a = []
 lon_eddies_c = []
 lat_eddies_c = []
 amp_eddies_c = []
 area_eddies_c = []
 scale_eddies_c = []
+time_eddies_c = []
 
 print 'eddy detection started'
 print "number of time steps to loop over: ",exps.T
@@ -83,6 +93,11 @@ for tt in range(exps.T):
     # Load map of sea surface height (SSH)
  
     eta, eta_miss = eddy.load_eta(exps.run, tt, i1, i2, j1, j2)
+
+    #retrieves time step
+    if getNEMOtime:
+        NEMOtime = eddy.load_eta(exps.run, tt, i1, i2, j1, j2,getNEMOtime=True)
+
     eta = eddy.remove_missing(eta, missing=eta_miss, replacement=np.nan)
     #eddy.quick_plot(eta,findrange=True)
     # 
@@ -99,6 +114,11 @@ for tt in range(exps.T):
     amp_eddies_a.append(amp)
     area_eddies_a.append(area)
     scale_eddies_a.append(scale)
+    if getNEMOtime:
+        #append the correct number of times (we are just making copies)
+        NEMOtimes=\
+        np.array([NEMOtime for eddynumber in np.arange(len(scale_eddies_a[tt]))])
+        time_eddies_a.append(NEMOtimes)
 
     lon_eddies, lat_eddies, amp, area, scale = eddy.detect_eddies(eta_filt, lon, lat, params.ssh_crits, exps.res, exps.Npix_min, exps.Npix_max, params.amp_thresh, params.d_thresh, cyc='cyclonic')
     lon_eddies_c.append(lon_eddies)
@@ -106,16 +126,25 @@ for tt in range(exps.T):
     amp_eddies_c.append(amp)
     area_eddies_c.append(area)
     scale_eddies_c.append(scale)
+    if getNEMOtime:
+        #append the correct number of times (we are just making copies)
+        NEMOtimes=\
+        np.array([NEMOtime for eddynumber in np.arange(len(scale_eddies_c[tt]))])
+        time_eddies_c.append(NEMOtimes)
  
     # Plot map of filtered SSH field
 
     eddies_a=(lon_eddies_a[tt],lat_eddies_a[tt])
     eddies_c=(lon_eddies_c[tt],lat_eddies_c[tt])
-    eddy.detection_plot(tt,lon,lat,eta,eta_filt,eddies_a,eddies_c,'rawtoo',exps.plot_dir,findrange=False)
-
+    if not getNEMOtime:
+        eddy.detection_plot(tt,lon,lat,eta,eta_filt,eddies_a,eddies_c,'rawtoo',exps.plot_dir,findrange=False)
+    else:
+        eddy.detection_plot(tt,lon,lat,eta,eta_filt,eddies_a,\
+                eddies_c,'rawtoo',exps.plot_dir,findrange=False,\
+                ptitle=str(NEMOtime))
 
 # Combine eddy information from all days into a list
 
-eddies = eddy.eddies_list(lon_eddies_a, lat_eddies_a, amp_eddies_a, area_eddies_a, scale_eddies_a, lon_eddies_c, lat_eddies_c, amp_eddies_c, area_eddies_c, scale_eddies_c)
+eddies = eddy.eddies_list(lon_eddies_a, lat_eddies_a, amp_eddies_a, area_eddies_a, scale_eddies_a, lon_eddies_c, lat_eddies_c, amp_eddies_c, area_eddies_c, scale_eddies_c,time_eddies_a,time_eddies_c)
 
 np.savez(exps.data_dir+'eddy_det_'+exps.run, eddies=eddies)

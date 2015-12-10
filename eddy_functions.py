@@ -270,13 +270,31 @@ def restrict_lonlat(lon, lat, lon1, lon2, lat1, lat2):
 
     return lon, lat, i1, i2, j1, j2
 
+def load_eta(run, tt, i1, i2, j1, j2, disk='erebor',getNEMOtime=False):
+    """
+    Loads sea surface height field from OFAM runs or Aviso or NEMO
 
-def load_eta(run, tt, i1, i2, j1, j2, disk='erebor'):
-    '''
-    Loads sea surface height field from OFAM runs or Aviso
+    Parameters
+    ----------
+    tt: 
+    i1: 
+    i2: 
+    j1: 
+    j2: 
+    disk:
+    getNEMOtime: (optional) chris added so that he can return absolute time step
+    exportNEMOtime: (optional) chris added so that he can habe absolute time steps in eddy_tracking
+
+    Returns
+    -------
+    eta: ssh
+    eta_miss: missing value in eta
+    
+    Notes
+    -------
     Assumes root is /mnt/erebor unless cerberus is specified.
-     run = 'CTRL' or 'A1B' or 'AVISO'
-    '''
+    run = 'CTRL' or 'A1B' or 'AVISO' or 'cb_AVISO' or 'cb_NEMO'
+    """
 
     #    
     # OFAM
@@ -403,13 +421,16 @@ def load_eta(run, tt, i1, i2, j1, j2, disk='erebor'):
                 nemo_lons[index,start:]=nemo_lons[index,start:]+360
             return nemo_lons
 
-
-        #pathroot='/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/nemo_cordex24_ERAI01/'
         pathroot=exps.pathroot
 
+        #this is daft because we repeat this every time step!
         file_list=raw_nemo_globber_specifytpe(exps.pathroot,return_dates=True)
         infile=file_list.iloc[tt]['file_list']
         file_time_index=file_list.iloc[tt]['file_time_index']
+
+        if getNEMOtime:
+            #return the absolute time
+            return file_list.index[tt]            
 
         #h'm need to interpolate because of funky NEMO grid...
         fileobj = Dataset(infile,mode='r')
@@ -432,7 +453,26 @@ def load_eta(run, tt, i1, i2, j1, j2, disk='erebor'):
         eta[np.where(etamask==0)]=0
         eta_miss=[0]
 
+        fileobj.close()
+
     return eta, eta_miss[0]
+
+def load_nemo_time():
+    """
+    Loads time steps from NEMO experiments
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    list of pandas time stamps 
+    
+    Notes
+    -------
+    """
+    file_list=raw_nemo_globber_specifytpe(exps.pathroot,return_dates=True)
+    return file_list.index.tolist()    
 
 def quick_plot(field,findrange=False):
     '''
@@ -648,7 +688,7 @@ def detect_eddies(field, lon, lat, ssh_crits, res, Npix_min, Npix_max, amp_thres
     return lon_eddies, lat_eddies, amp_eddies, area_eddies, scale_eddies
 
 
-def detection_plot(tt,lon,lat,eta,eta_filt,anticyc_eddies,cyc_eddies,ptype,plot_dir,findrange=True):
+def detection_plot(tt,lon,lat,eta,eta_filt,anticyc_eddies,cyc_eddies,ptype,plot_dir,findrange=True,ptitle=''):
     """function to plot how the eddy detection alogirthm went
     
     :tt
@@ -690,13 +730,19 @@ def detection_plot(tt,lon,lat,eta,eta_filt,anticyc_eddies,cyc_eddies,ptype,plot_
         #cb NEMO range
         cs1=plt.contourf(lon, lat, eta_filt, levels=np.linspace(-.817,0.5,40))
         cbar=fig.colorbar(cs1,orientation='vertical')
-        ax.set_title('day: ' + str(tt)+' filtered ssh')
+        if ptitle=='':
+            ax.set_title('day: ' + str(tt)+' filtered ssh')
+        else:
+            ax.set_title(ptitle+ '. filtered ssh')
         plot_eddies()
         
         ax=fig.add_subplot(1, 2,2)
         cs1=plt.contourf(lon, lat, eta, levels=np.linspace(-1.75,0.85,40))
         cbar=fig.colorbar(cs1,orientation='vertical')
-        ax.set_title('day: ' + str(tt)+' raw ssh')
+        if ptitle=='':
+            ax.set_title('day: ' + str(tt)+' raw ssh')
+        else:
+            ax.set_title(ptitle+ '. raw ssh')
         plot_eddies()
 
 
@@ -713,13 +759,14 @@ def detection_plot(tt,lon,lat,eta,eta_filt,anticyc_eddies,cyc_eddies,ptype,plot_
 
     pass
 
-def eddies_list(lon_eddies_a, lat_eddies_a, amp_eddies_a, area_eddies_a, scale_eddies_a, lon_eddies_c, lat_eddies_c, amp_eddies_c, area_eddies_c, scale_eddies_c):
+def eddies_list(lon_eddies_a, lat_eddies_a, amp_eddies_a, area_eddies_a, scale_eddies_a, lon_eddies_c, lat_eddies_c, amp_eddies_c, area_eddies_c, scale_eddies_c,time_eddies_a,time_eddies_c):
     '''
     Creates list detected eddies
     '''
 
     eddies = []
 
+    #loop through each time step
     for ed in range(len(lon_eddies_c)):
         eddy_tmp = {}
         eddy_tmp['lon'] = np.append(lon_eddies_a[ed], lon_eddies_c[ed])
@@ -729,6 +776,11 @@ def eddies_list(lon_eddies_a, lat_eddies_a, amp_eddies_a, area_eddies_a, scale_e
         eddy_tmp['scale'] = np.append(scale_eddies_a[ed], scale_eddies_c[ed])
         eddy_tmp['type'] = list(repeat('anticyclonic',len(lon_eddies_a[ed]))) + list(repeat('cyclonic',len(lon_eddies_c[ed])))
         eddy_tmp['N'] = len(eddy_tmp['lon'])
+        
+        #if we want the time...
+        if time_eddies_a!=[] or time_eddies_c!=[]:
+            eddy_tmp['date'] =  np.append(time_eddies_a[ed], time_eddies_c[ed])
+        
         eddies.append(eddy_tmp)
 
     return eddies
@@ -935,3 +987,11 @@ def track_eddies(eddies, det_eddies, tt, dt, dt_aviso, dE_aviso, rossrad, eddy_s
 
     return eddies
 
+def add_time_2tracked_eddies(eddies, nemo_tsteps):
+    '''
+    Given output from track_eddies, add start time
+    '''
+    for ed in np.arange(len(eddies)):
+        #zero because we want the first time we tracked the eddy 
+        eddies[ed]['start_date']=nemo_tsteps[eddies[ed]['time'][0]-1]
+    return eddies

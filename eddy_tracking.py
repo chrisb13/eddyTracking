@@ -26,6 +26,8 @@ import pickle
 import params
 import experiments as exps
 
+getNEMOtime=False
+
 #for eddytrackwrap.py 
 from docopt import docopt
 arguments = docopt(__doc__)
@@ -40,6 +42,7 @@ if arguments['--cli']:
     exps.res=cli_exp_dict['RES']
     exps.run=cli_exp_dict['RUN']
     exps.T=cli_exp_dict['T']
+    # exps.T=3 #TEMP TEP
 
     res_aviso = 0.25 # horizontal resolution of Aviso SSH fields [degrees]
 
@@ -47,7 +50,7 @@ if arguments['--cli']:
     exps.Npix_min = np.floor(8*area_correction) # min number of eddy pixels
     exps.Npix_max = np.floor(1000*area_correction) # max number of eddy pixels
 
-
+    getNEMOtime=True
 
 # Automated eddy tracking
 
@@ -65,6 +68,10 @@ print "number of time steps to loop over: ",exps.T
 
 rossrad = eddy.load_rossrad() # Atlas of Rossby radius of deformation and first baroclinic wave speed (Chelton et al. 1998)
 
+#grab NEMO timesteps
+if getNEMOtime:
+    nemo_tsteps=eddy.load_nemo_time()
+
 for tt in range(1, exps.T):
 
     print "timestep: " ,tt+1,". out of: ", exps.T
@@ -73,16 +80,20 @@ for tt in range(1, exps.T):
 
     eddies = eddy.track_eddies(eddies, det_eddies, tt, exps.dt, params.dt_aviso, params.dE_aviso, rossrad, params.eddy_scale_min, params.eddy_scale_max)
 
-    # Save data incrementally
+    if not getNEMOtime:
+        # Save data incrementally
 
-    if( np.mod(tt, params.dt_save)==0 ):
+        if( np.mod(tt, params.dt_save)==0 ):
 
-        np.savez(exps.data_dir+'eddy_track_'+exps.run, eddies=eddies)
+            np.savez(exps.data_dir+'eddy_track_'+exps.run, eddies=eddies)
 
 # Add keys for eddy age and flag if eddy was still in existence at end of exps.run
 
 for ed in range(len(eddies)):
 
     eddies[ed]['age'] = len(eddies[ed]['lon'])
+
+if getNEMOtime:
+    eddies=eddy.add_time_2tracked_eddies(eddies, nemo_tsteps)
 
 np.savez(exps.data_dir+'eddy_track_'+exps.run, eddies=eddies)
