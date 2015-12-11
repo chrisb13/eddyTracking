@@ -107,8 +107,9 @@ time_eddies_c = []
 
 print 'eddy detection started'
 
-if not arguments['--cli']:
+if not arguments['--cli'] or arguments['--mc'] is None:
     fileloop=np.arange(exps.T)
+
 
 print "number of time steps to loop over: ",len(fileloop)
 

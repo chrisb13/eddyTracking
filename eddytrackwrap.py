@@ -19,7 +19,7 @@ Interface is by command line.
 Usage:
     eddytrackwrap.py 
     eddytrackwrap.py -h
-    eddytrackwrap.py RUN RES DT PATHROOT DATA_DIR PLOT_DIR [--mc MCORE] 
+    eddytrackwrap.py RUN RES DT PATHROOT DATA_DIR PLOT_DIR [--mc MCORE --track] 
 Options:
     -h,--help          : show this help message
     RUN                : Run Name
@@ -28,7 +28,8 @@ Options:
     PATHROOT           : path to data
     DATA_DIR           : path to put all our working data in
     PLOT_DIR           : path to put all our plots in
-    --mc MCORE         : str with 'corenumber'+'_'+'number-of-cores' 
+    --mc MCORE         : str with 'corenumber'+'_'+'number-of-cores'  (corenumber starts at zero)
+    --track            : track eddies (having completed detection) in multi-core mode
 
 Notes:
     Will determine the number of time steps (T) automatically!
@@ -120,6 +121,9 @@ if __name__ == "__main__":
         subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'+\
                 ' --mc ' + arguments['--mc']\
                 ,shell=True)
+    elif arguments['--track']:
+        print "Running Eddy Tracker in multi_core mode! We are tracking... (already done detection)"
+        subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p --track',shell=True)
     else:
         print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'
         subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p',shell=True)

@@ -9,7 +9,7 @@ This script is normally run without arguments, unless using ./eddytrackwrap.py (
 
 Usage:
     eddy_tracking.py 
-    eddy_tracking.py --cli PCKLE_PATH
+    eddy_tracking.py --cli PCKLE_PATH [--track] 
     eddy_tracking.py -h
 Options:
     -h,--help          : show this help message
@@ -23,8 +23,11 @@ import eddy_functions as eddy
 import pickle
 # Load parameters
 
+
 import params
 import experiments as exps
+import glob
+import subprocess
 
 getNEMOtime=False
 
@@ -52,9 +55,34 @@ if arguments['--cli']:
 
     getNEMOtime=True
 
+    if arguments['--track']:
+        #check the detection step went okay by counting frames of plots...
+        ifiles=sorted(glob.glob(exps.plot_dir + '*.png' ))
+        assert(ifiles!=[]),"glob couldn't find any plots!"
+
+        assert(len(ifiles)==exps.T),"number of plots and time steps didn't match; did your detection step fail?"
+        #make a movie of the eddies
+        #now stitching into a movie
+        cmd="git clone https://github.com/chrisb13/mkmov/ "+exps.plot_dir+'mkmov'
+        subprocess.call(cmd,shell=True)
+        cmd="python "+exps.plot_dir+'mkmov'+'/mkmov.py '+ ' --stitch -o '+exps.plot_dir+exps.run+'_eddy_detect.mov ' +exps.plot_dir + '*.png'
+        subprocess.call( cmd,shell=True)
+
+        #rm the mkmov repo
+        cmd="rm -rf "+exps.plot_dir+'mkmov'
+        subprocess.call(cmd ,shell=True)
+
+        ifiles=sorted(glob.glob(exps.data_dir + 'eddy*.npz' ))
+        assert(ifiles!=[]),"glob didn't find anything!"
+        data={}
+        data['eddies']=np.concatenate([np.load(f)['eddies'] for f in ifiles])
+
+        print "stitching from multicore detection complete!"
+
 # Automated eddy tracking
 
-data = np.load(exps.data_dir+'eddy_det_'+exps.run+'.npz')
+if not arguments['--track']:
+    data = np.load(exps.data_dir+'eddy_det_'+exps.run+'.npz')
 det_eddies = data['eddies'] # len(eddies) = number of time steps
 
 # Initialize eddies discovered at first time step

@@ -27,6 +27,7 @@ import params
 import experiments as exps
 
 import re
+import os
 
 
 def raw_nemo_globber_specifytpe(exp_path,return_dates=False):
@@ -823,7 +824,7 @@ def load_rossrad():
     #data = np.loadtxt('data/rossrad.dat')
 
     #cb
-    data = np.loadtxt('./rossrad.dat')
+    data = np.loadtxt(os.path.dirname(os.path.realpath(__file__))+'/rossrad.dat')
 
     rossrad = {}
     rossrad['lat'] = data[:,0]
