@@ -17,7 +17,6 @@ Main function to automate NEMO eddy tracking for the following files:
 Interface is by command line.
 
 Usage:
-    eddytrackwrap.py 
     eddytrackwrap.py -h
     eddytrackwrap.py RUN RES DT PATHROOT DATA_DIR PLOT_DIR [--mc MCORE --track] 
 Options:
@@ -89,10 +88,11 @@ def find_T(path_to_experiment):
 
     pass
 
+arguments = docopt(__doc__)
+
 if __name__ == "__main__": 
     print "Running Eddy Tracker in arg passing mode!"
     #read in/process  arguments
-    arguments = docopt(__doc__)
 
     print arguments
     # import pdb; pdb.set_trace()
