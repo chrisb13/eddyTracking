@@ -19,7 +19,7 @@ Interface is by command line.
 Usage:
     eddytrackwrap.py 
     eddytrackwrap.py -h
-    eddytrackwrap.py RUN RES DT PATHROOT DATA_DIR PLOT_DIR
+    eddytrackwrap.py RUN RES DT PATHROOT DATA_DIR PLOT_DIR [--mc MCORE] 
 Options:
     -h,--help          : show this help message
     RUN                : Run Name
@@ -28,6 +28,7 @@ Options:
     PATHROOT           : path to data
     DATA_DIR           : path to put all our working data in
     PLOT_DIR           : path to put all our plots in
+    --mc MCORE         : str with 'corenumber'+'_'+'number-of-cores' 
 
 Notes:
     Will determine the number of time steps (T) automatically!
@@ -92,7 +93,8 @@ if __name__ == "__main__":
     #read in/process  arguments
     arguments = docopt(__doc__)
 
-    # print arguments
+    print arguments
+    # import pdb; pdb.set_trace()
     workingfolder=arguments['DATA_DIR']
 
     print "Creating/checking we have output dirs."
@@ -110,8 +112,17 @@ if __name__ == "__main__":
     pickle.dump( arguments, open( workingfolder+'pickleargs.p', "wb" ) )
     print "dumping arguments into pickle here: "+workingfolder+'pickleargs.p'
 
-    print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'
-    subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p',shell=True)
+    if arguments['--mc'] is not None:
+        print "Running Eddy Tracker in multi_core mode!"
+        # corenum=arguments['--mc'].split('_')[0]
+        # coretotal=arguments['--mc'].split('_')[1]
+        # print corenum, coretotal
+        subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'+\
+                ' --mc ' + arguments['--mc']\
+                ,shell=True)
+    else:
+        print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p'
+        subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_detection.py --cli '+workingfolder+'pickleargs.p',shell=True)
 
-    print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p'
-    subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p',shell=True)
+        print "executing: "+'python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p'
+        subprocess.call('python '+os.path.dirname(os.path.realpath(__file__))+ '/eddy_tracking.py --cli '+workingfolder+'pickleargs.p',shell=True)
