@@ -620,7 +620,7 @@ def detect_eddies(field, lon, lat, ssh_crits, res, Npix_min, Npix_max, amp_thres
 
     # ssh_crits increasing for 'cyclonic', decreasing for 'anticyclonic'
     ssh_crits.sort()
-    if cyc == 'anticyclonic':
+    if cyc == 'cyclonic':
         ssh_crits = np.flipud(ssh_crits)
 
     # loop over ssh_crits and remove interior pixels of detected eddies from subsequent loop steps
