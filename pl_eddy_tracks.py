@@ -19,12 +19,27 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
+def mkdir(p):
+    """make directory of path that is passed"""
+    try:
+       os.makedirs(p)
+       lg.info("output folder: "+p+ " does not exist, we will make one.")
+    except OSError as exc: # Python >2.5
+       import errno
+       if exc.errno == errno.EEXIST and os.path.isdir(p):
+          pass
+       else: raise
+
 def load_eddy_tracks():
     """function to load the eddy tracks from Eric Oliver's Eddy Tracking algorithm
     :returns: @todo
     """
-    eddy_ctrl=np.load('/home/chris/mount_win/tracking/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_ERAI01/eddy_track_cb_NEMO.npz')
-    eddy_flat=np.load('/home/chris/mount_win/tracking/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_FLATFCNG_ERAI01/eddy_track_cb_NEMO.npz')
+    # eddy_ctrl=np.load('/home/chris/mount_win/tracking/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_ERAI01/eddy_track_cb_NEMO.npz')
+    # eddy_flat=np.load('/home/chris/mount_win/tracking/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_FLATFCNG_ERAI01/eddy_track_cb_NEMO.npz')
+
+    #home machine
+    eddy_ctrl=np.load('/home/chris/mount_win/eddy_track/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_ERAI01/eddy_track_cb_NEMO.npz')
+    eddy_flat=np.load('/home/chris/mount_win/eddy_track/srv/ccrc/data42/z3457920/20151012_eac_sep_dynamics/analysis/eddy_tracking_katana/nemo_cordex24_FLATFCNG_ERAI01/eddy_track_cb_NEMO.npz')
     return eddy_ctrl['eddies'],eddy_flat['eddies']
 
 def filter_eddy_tracks_age(dict_of_eddies_from_npz,eddy_age):
@@ -112,7 +127,12 @@ def plot_variable(ed1,ed2,eddy_variable_name,lb1,lb2,output_path_name):
 
 if __name__ == "__main__": 
     LogStart('',fout=False)
-    # eddy_ctrl,eddy_flat=load_eddy_tracks()
+
+
+    plot_output_folder='/home/chris/mount_win/plots/'
+    mkdir(plot_output_folder)
+
+    eddy_ctrl,eddy_flat=load_eddy_tracks()
 
     ####################
     #  anticylyclonic  #
@@ -127,10 +147,10 @@ if __name__ == "__main__":
     ctrl_filt=filter_eddy_tracks_type(ctrl_filt,'anticyclonic')
     flat_filt=filter_eddy_tracks_type(flat_filt,'anticyclonic')
 
-    plot_variable(ctrl_filt,flat_filt,'amp','ctrl','const','./anti_ctrl_v_flat_amp.png')
-    plot_variable(ctrl_filt,flat_filt,'age','ctrl','const','./anti_ctrl_v_flat_age.png')
-    plot_variable(ctrl_filt,flat_filt,'scale','ctrl','const','./anti_ctrl_v_flat_scale.png')
-    plot_variable(ctrl_filt,flat_filt,'area','ctrl','const','./anti_ctrl_v_flat_area.png')
+    plot_variable(ctrl_filt,flat_filt,'amp','ctrl','const',plot_output_folder+'anti_ctrl_v_flat_amp.png')
+    plot_variable(ctrl_filt,flat_filt,'age','ctrl','const',plot_output_folder+'anti_ctrl_v_flat_age.png')
+    plot_variable(ctrl_filt,flat_filt,'scale','ctrl','const',plot_output_folder+'anti_ctrl_v_flat_scale.png')
+    plot_variable(ctrl_filt,flat_filt,'area','ctrl','const',plot_output_folder+'anti_ctrl_v_flat_area.png')
 
     ##############
     #  cyclonic  #
@@ -145,10 +165,10 @@ if __name__ == "__main__":
     ctrl_filt=filter_eddy_tracks_type(ctrl_filt,'cyclonic')
     flat_filt=filter_eddy_tracks_type(flat_filt,'cyclonic')
 
-    plot_variable(ctrl_filt,flat_filt,'amp','ctrl','const','./ctrl_v_flat_amp.png')
-    plot_variable(ctrl_filt,flat_filt,'age','ctrl','const','./ctrl_v_flat_age.png')
-    plot_variable(ctrl_filt,flat_filt,'scale','ctrl','const','./ctrl_v_flat_scale.png')
-    plot_variable(ctrl_filt,flat_filt,'area','ctrl','const','./ctrl_v_flat_area.png')
+    plot_variable(ctrl_filt,flat_filt,'amp','ctrl','const',plot_output_folder+'ctrl_v_flat_amp.png')
+    plot_variable(ctrl_filt,flat_filt,'age','ctrl','const',plot_output_folder+'ctrl_v_flat_age.png')
+    plot_variable(ctrl_filt,flat_filt,'scale','ctrl','const',plot_output_folder+'ctrl_v_flat_scale.png')
+    plot_variable(ctrl_filt,flat_filt,'area','ctrl','const',plot_output_folder+'ctrl_v_flat_area.png')
 
 
     lg.info('')
