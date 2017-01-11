@@ -65,7 +65,7 @@ if arguments['--cli']:
         #now stitching into a movie
         cmd="git clone https://github.com/chrisb13/mkmov/ "+exps.plot_dir+'mkmov'
         subprocess.call(cmd,shell=True)
-        cmd="python "+exps.plot_dir+'mkmov'+'/mkmov.py '+ ' --stitch -o '+exps.plot_dir+exps.run+'_eddy_detect.mov ' +exps.plot_dir + '*.png'
+        cmd="python "+exps.plot_dir+'mkmov'+'/mkmov.py '+ ' stitch -o '+exps.plot_dir+exps.run+'_eddy_detect.mov ' +exps.plot_dir + '*.png'
         subprocess.call( cmd,shell=True)
 
         #rm the mkmov repo
